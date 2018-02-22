@@ -49,7 +49,7 @@ def build_country_code_converter(codeinfo):
                                       codeinfo["quote"])
     for key,val in cc_dict.items():
         code_convert_dict[key] = val[codeinfo["data_codes"]]
-##        print(key,val[codeinfo["data_codes"]])
+
     return code_convert_dict
 
 
@@ -158,22 +158,28 @@ def test_render_world_map():
 # test_render_world_map()
 
 ######################################################################
-##gdpinfo = {
-##    "gdpfile": "isp_gdp.csv",
-##    "separator": ",",
-##    "quote": '"',
-##    "min_year": 1960,
-##    "max_year": 2015,
-##    "country_name": "Country Name",
-##    "country_code": "Country Code"
-##    }
-##codeinfo = {
-##    "codefile": "isp_country_codes.csv",
-##    "separator": ",",
-##    "quote": '"',
-##    "plot_codes": "ISO3166-1-Alpha-2",
-##    "data_codes": "ISO3166-1-Alpha-3"
-##    }
-##
-### problem 1 call   
-##code_key_dict = build_country_code_converter(codeinfo)
+gdpinfo = {
+    "gdpfile": "isp_gdp.csv",
+    "separator": ",",
+    "quote": '"',
+    "min_year": 1960,
+    "max_year": 2015,
+    "country_name": "Country Name",
+    "country_code": "Country Code"
+    }
+codeinfo = {
+    "codefile": "isp_country_codes.csv",
+    "separator": ",",
+    "quote": '"',
+    "plot_codes": "ISO3166-1-Alpha-2",
+    "data_codes": "ISO3166-1-Alpha-3"
+    }
+gdp_countries = read_csv_as_nested_dict(gdpinfo["gdpfile"],
+                                       gdpinfo["country_code"],
+                                       gdpinfo["separator"],
+                                       gdpinfo["quote"])
+# problem 1 call   
+plot_countries = build_country_code_converter(codeinfo)
+
+# problem 2 call
+rec_dict = reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries)
