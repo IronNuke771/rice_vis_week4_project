@@ -49,9 +49,7 @@ def build_country_code_converter(codeinfo):
                                       codeinfo["quote"])
     for key,val in cc_dict.items():
         code_convert_dict[key] = val[codeinfo["data_codes"]]
-
     return code_convert_dict
-
 
 def reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries):
     """
@@ -73,7 +71,28 @@ def reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries):
       the codes with the exact same case as they have in
       plot_countries and gdp_countries.
     """
-    return {}, set()
+    recon_dict = {}
+    recon_set = set()
+    code_convert_dict = build_country_code_converter(codeinfo)
+    
+##    print("codeinfo",codeinfo)
+##    print("plot_countries",plot_countries)
+##    print("code convert dict",code_convert_dict)
+##    print("GDP table",gdp_countries)
+##    print("")
+
+    for code2 in plot_countries.keys():
+        u_code2=code2.upper()
+        if u_code2 in code_convert_dict and code_convert_dict[u_code2] in gdp_countries:
+##            print(code2,code3,code_convert_dict[u_code2])
+            recon_dict[code2] = code_convert_dict[u_code2]
+        else:
+            recon_set.add(code2)
+
+##    print(recon_dict)
+##    print(recon_set)
+##    print(len(recon_dict),len(recon_set))
+    return recon_dict, recon_set
 
 
 def build_map_dict_by_code(gdpinfo, codeinfo, plot_countries, year):
@@ -158,28 +177,39 @@ def test_render_world_map():
 # test_render_world_map()
 
 ######################################################################
-gdpinfo = {
-    "gdpfile": "isp_gdp.csv",
-    "separator": ",",
-    "quote": '"',
-    "min_year": 1960,
-    "max_year": 2015,
-    "country_name": "Country Name",
-    "country_code": "Country Code"
-    }
-codeinfo = {
-    "codefile": "isp_country_codes.csv",
-    "separator": ",",
-    "quote": '"',
-    "plot_codes": "ISO3166-1-Alpha-2",
-    "data_codes": "ISO3166-1-Alpha-3"
-    }
-gdp_countries = read_csv_as_nested_dict(gdpinfo["gdpfile"],
-                                       gdpinfo["country_code"],
-                                       gdpinfo["separator"],
-                                       gdpinfo["quote"])
-# problem 1 call   
-plot_countries = build_country_code_converter(codeinfo)
-
-# problem 2 call
-rec_dict = reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries)
+##gdpinfo = {
+##    "gdpfile": "isp_gdp.csv",
+##    "separator": ",",
+##    "quote": '"',
+##    "min_year": 1960,
+##    "max_year": 2015,
+##    "country_name": "Country Name",
+##    "country_code": "Country Code"
+##    }
+##codeinfo = {
+##    "codefile": "isp_country_codes.csv",
+##    "separator": ",",
+##    "quote": '"',
+##    "plot_codes": "ISO3166-1-Alpha-2",
+##    "data_codes": "ISO3166-1-Alpha-3"
+##    }
+##gdp_countries = read_csv_as_nested_dict(gdpinfo["gdpfile"],
+##                                       gdpinfo["country_code"],
+##                                       gdpinfo["separator"],
+##                                       gdpinfo["quote"])
+### problem 1 call   
+##plot_countries = build_country_code_converter(codeinfo)
+##
+### problem 2 call
+##p2 = reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries)
+##p2 = reconcile_countries_by_code({'quote': '"', 'separator': ',', 'data_codes': 'ISO3166-1-Alpha-3',
+##                             'codefile': 'code4.csv', 'plot_codes': 'ISO3166-1-Alpha-2'},
+##                            {'pr': 'Puerto Rico', 'us': 'United States', 'no': 'Norway'},
+##                            {'NOR': {'Country Name': 'Norway', 'Country Code': 'NOR'},
+##                             'USA': {'Country Name': 'United States', 'Country Code': 'USA'},
+##                             'PRI': {'Country Name': 'Puerto Rico', 'Country Code': 'PRI'}})
+##reconcile_countries_by_code({'quote': '"', 'separator': ',', 'data_codes': 'ISO3166-1-Alpha-3',
+##                             'codefile': 'code4.csv', 'plot_codes': 'ISO3166-1-Alpha-2'},
+##                            {'pr': 'Puerto Rico', 'us': 'United States', 'no': 'Norway'},
+##                            {'NOR': {'Country Name': 'Norway', 'Country Code': 'NOR'},
+##                             'USA':{'Country Name': 'United States', 'Country Code': 'USA'}})
