@@ -10,6 +10,27 @@ import csv
 import math
 import pygal
 
+def read_csv_as_nested_dict(filename, keyfield, separator, quote):
+    """
+    Inputs:
+      filename  - Name of CSV file
+      keyfield  - Field to use as key for rows
+      separator - Character that separates fields
+      quote     - Character used to optionally quote fields
+
+    Output:
+      Returns a dictionary of dictionaries where the outer dictionary
+      maps the value in the key_field to the corresponding row in the
+      CSV file.  The inner dictionaries map the field names to the
+      field values for that row.
+    """
+    return_dict = {}
+    with open(filename, newline='') as csvfile:
+        csvreader = csv.DictReader(csvfile, delimiter=separator, quotechar=quote)
+        for row in csvreader:
+            row_key = row[keyfield]
+            return_dict[row_key] = row
+    return return_dict
 
 def build_country_code_converter(codeinfo):
     """
@@ -21,7 +42,15 @@ def build_country_code_converter(codeinfo):
       are world bank country codes, where the code fields in the
       code file are specified in codeinfo.
     """
-    return {}
+    code_convert_dict = {}
+    cc_dict = read_csv_as_nested_dict(codeinfo["codefile"],
+                                      codeinfo["plot_codes"],
+                                      codeinfo["separator"],
+                                      codeinfo["quote"])
+    for key,val in cc_dict.items():
+        code_convert_dict[key] = val[codeinfo["data_codes"]]
+##        print(key,val[codeinfo["data_codes"]])
+    return code_convert_dict
 
 
 def reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries):
@@ -127,3 +156,24 @@ def test_render_world_map():
 # out when submitting to OwlTest/CourseraTest.
 
 # test_render_world_map()
+
+######################################################################
+##gdpinfo = {
+##    "gdpfile": "isp_gdp.csv",
+##    "separator": ",",
+##    "quote": '"',
+##    "min_year": 1960,
+##    "max_year": 2015,
+##    "country_name": "Country Name",
+##    "country_code": "Country Code"
+##    }
+##codeinfo = {
+##    "codefile": "isp_country_codes.csv",
+##    "separator": ",",
+##    "quote": '"',
+##    "plot_codes": "ISO3166-1-Alpha-2",
+##    "data_codes": "ISO3166-1-Alpha-3"
+##    }
+##
+### problem 1 call   
+##code_key_dict = build_country_code_converter(codeinfo)
