@@ -73,10 +73,10 @@ def reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries):
     recon_set = set()
     code_convert_dict = build_country_code_converter(codeinfo)
     
-##    print("plot_countries",plot_countries)
-##    print("code convert dict",code_convert_dict)
-##    print("GDP table",gdp_countries)
-##    print("")
+    print("plot_countries",plot_countries)
+    print("code convert dict",code_convert_dict)
+    print("GDP table",gdp_countries)
+    print("")
 ##    print("pkl:",plot_key_list)
 ##    print("cckl:",code_convert_key_list)
             
