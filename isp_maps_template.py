@@ -69,47 +69,43 @@ def reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries):
       the codes with the exact same case as they have in
       plot_countries and gdp_countries.
     """
-    recon_dict = {}
-    recon_set = set()
+    net_key_dict = {}
+    recon2_dict = {}
+    recon2_set = set()
     code_convert_dict = build_country_code_converter(codeinfo)
     
-    print("plot_countries",plot_countries)
-    print("code convert dict",code_convert_dict)
-    print("GDP table",gdp_countries)
-    print("")
-##    print("pkl:",plot_key_list)
-##    print("cckl:",code_convert_key_list)
-            
-    for code2 in plot_countries.keys():
-        # Do casing comparisons on the country dict key items
-        mat_code= ""
-        if code2.upper() in code_convert_dict.keys():
-            mat_code = code2.upper()
-        elif code2.lower() in code_convert_dict.keys():
-            mat_code = code2.lower()
-##        print(code2,mat_code)
-        
-        # Do casing comparisons on the country dict value items
-        gdp_mat_code = ""
-        if mat_code>" ":
-            print(code2,code_convert_dict[mat_code].upper())
-            if code_convert_dict[mat_code].upper() in gdp_countries:
-                gdp_mat_code = code_convert_dict[mat_code].upper()
-            elif code_convert_dict[mat_code].lower() in gdp_countries:
-                gdp_mat_code = code_convert_dict[mat_code].lower()
-        
-        # Populate the output dictionary and set
-        if mat_code in code_convert_dict and gdp_mat_code in gdp_countries:
-##            print(code2,code3,code_convert_dict[u_code2])
-            recon_dict[code2] = code_convert_dict[mat_code]
-        else:
-            recon_set.add(code2)
-    print("------RECONCILE COUNTRY BY CODE------")
-    print("plot / gdp matched",recon_dict)
-    print("unmatched countries",recon_set)
-    print("-----------")
-    print("")
-    return recon_dict, recon_set
+##    print("plot_countries",plot_countries)
+##    print("code convert dict",code_convert_dict)
+##    print("GDP table",gdp_countries)
+##    print("")
+
+    # Get the matched items from the plot dict and the convert dict
+    for plot_key in plot_countries.keys():
+        for cc_key,cc_val in code_convert_dict.items():
+            if plot_key.upper() == cc_key.upper():
+                net_key_dict[plot_key]=cc_val
+                
+##    print('net_key_dict',net_key_dict)
+    
+    # Populate the return dict
+    for npk_key,npk_value in net_key_dict.items():
+        for gdp_key in gdp_countries.keys():
+##            print(npk_value,gdp_key)
+            if npk_value.upper() == gdp_key.upper():
+##                print(npk_value,gdp_key)
+                recon2_dict[npk_key] = gdp_key
+
+    # Populate the return set
+    for nkd_key,nkd_val in net_key_dict.items():
+        if nkd_val.upper() not in [gdp_val.upper() for gdp_val in gdp_countries.keys()]:
+            recon2_set.add(nkd_key)
+    
+##    print("------RECONCILE COUNTRY BY CODE------")
+##    print("plot / gdp matched",recon2_dict)
+##    print("unmatched countries",recon2_set)
+##    print("-----------")
+##    print("")
+    return recon2_dict, recon2_set
 
 
 def build_map_dict_by_code(gdpinfo, codeinfo, plot_countries, year):
@@ -129,40 +125,40 @@ def build_map_dict_by_code(gdpinfo, codeinfo, plot_countries, year):
       have no GDP data for the specified year.
     """
     return_dict = {}
-    return_set1 = set()
+    return_set1 = set(plot_countries)
     return_set2 = set()
     gdp_countries = read_csv_as_nested_dict(gdpinfo["gdpfile"],
                                        gdpinfo["country_code"],
                                        gdpinfo["separator"],
                                        gdpinfo["quote"])
     net_plot_dict = reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries)[0]
-    no_gdp_code = reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries)[1]
-##    print("net_plot_dict",net_plot_dict)
+##    no_gdp_code = reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries)[1]
+    print("plot countries",plot_countries)
+    print("net_plot_dict",net_plot_dict)
 ##    print("no_gdp_code",no_gdp_code)
-##    print("gdp dict", gdp_countries)
+    print("gdp dict", gdp_countries)
     
+    # Populate the return dictionary
     for pygal_code,gdp_code in net_plot_dict.items():
-        cased_gdp = ""
-        print(pygal_code,gdp_code)
-        if gdp_code.lower() in gdp_countries:
-            cased_gdp = gdp_code.lower()
-        elif gdp_code.upper() in gdp_countries:
-            cased_gdp = gdp_code.upper()
-        print("cased_gdp",cased_gdp)
-        if cased_gdp > " ":
-            ann_gdp = gdp_countries[cased_gdp][year]
-            if ann_gdp.isnumeric and len(ann_gdp):
-                log_ann_gdp = math.log(float(ann_gdp),10)
-                return_dict[pygal_code] = log_ann_gdp
-            else:
-                return_set2.add(pygal_code)
+        ann_gdp = gdp_countries[gdp_code][year]
+        if ann_gdp.isnumeric and len(ann_gdp):
+            log_ann_gdp = math.log(float(ann_gdp),10)
+            return_dict[pygal_code] = log_ann_gdp
+            return_set1.remove(pygal_code)
+        else:
+            return_set2.add(pygal_code)
+            return_set1.remove(pygal_code)
     
-    return_set1 = reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries)[1]
+    # Populate set1 - plot country codes not in GDP data
+
     
-##    print("------BUILD MAP DICT BY CODE------")
-##    print(return_dict)
-##    print(return_set1)
-##    print(return_set2)
+        
+##    return_set1 = reconcile_countries_by_code(codeinfo, plot_countries, gdp_countries)[1]
+    
+    print("------BUILD MAP DICT BY CODE------")
+    print(return_dict)
+    print(return_set1)
+    print(return_set2)
     return return_dict, return_set1, return_set2
 
 def render_world_map(gdpinfo, codeinfo, plot_countries, year, map_file):
@@ -223,7 +219,7 @@ def test_render_world_map():
 # Make sure the following call to test_render_world_map is commented
 # out when submitting to OwlTest/CourseraTest.
 
-# test_render_world_map()
+##test_render_world_map()
 
 ######################################################################
 ##p3 = build_map_dict_by_code({'country_code': 'Code', 'max_year': 2005, 'quote': '"',
@@ -238,10 +234,15 @@ def test_render_world_map():
 ##                       {'codefile': 'code2.csv', 'quote': "'",
 ##                        'data_codes': 'Cd1', 'plot_codes': 'Cd2', 'separator': ','},
 ##                       {'C1': 'c1', 'C3': 'c3', 'C5': 'c5', 'C4': 'c4', 'C2': 'c2'}, '1953')
-
-build_map_dict_by_code({'quote': "'", 'gdpfile': 'gdptable3.csv', 'max_year': 20017,
-                        'separator': ';', 'country_name': 'ID', 'min_year': 20010,
-                        'country_code': 'CC'}, {'codefile': 'code1.csv',
-                        'quote': "'", 'data_codes': 'Code3', 'plot_codes': 'Code4',
-                        'separator': ','},
-                       {'C1': 'c1', 'C3': 'c3', 'C5': 'c5', 'C4': 'c4', 'C2': 'c2'}, '20012')
+##
+##build_map_dict_by_code({'quote': "'", 'gdpfile': 'gdptable3.csv', 'max_year': 20017,
+##                        'separator': ';', 'country_name': 'ID', 'min_year': 20010,
+##                        'country_code': 'CC'}, {'codefile': 'code1.csv',
+##                        'quote': "'", 'data_codes': 'Code3', 'plot_codes': 'Code4',
+##                        'separator': ','},
+##                       {'C1': 'c1', 'C3': 'c3', 'C5': 'c5', 'C4': 'c4', 'C2': 'c2'}, '20012')
+##build_map_dict_by_code({'country_code': 'Code', 'max_year': 2005, 'quote': '"',
+##                        'separator': ',', 'min_year': 2000, 'country_name': 'Country Name',
+##                        'gdpfile': 'gdptable1.csv'}, {'quote': "'", 'separator': ',',
+##                        'data_codes': 'Cd3', 'codefile': 'code2.csv', 'plot_codes': 'Cd2'},
+##                       {'C3': 'c3', 'C1': 'c1', 'C5': 'c5', 'C2': 'c2', 'C4': 'c4'}, '2001')
